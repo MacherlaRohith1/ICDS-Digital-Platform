@@ -1,0 +1,17 @@
+{
+  "name": "icds-digital-platform",
+  "version": "1.0.0",
+  "description": "ICDS Digital Enablement, Decision Support & Performance Monitoring",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sql.js": "^1.10.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5"
+  }
+}

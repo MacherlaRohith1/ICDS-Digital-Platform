@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICDS Digital Enablement Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Syne:wght@400;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1525;
+    --deep: #0D1E35;
+    --blue: #1A3A5C;
+    --accent: #F5A623;
+    --gold: #E8920A;
+    --teal: #00C9A7;
+    --red: #E85D4A;
+    --text: #E8EDF5;
+    --muted: #8FA3BF;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 18px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(11,21,37,0.95), transparent);
+    backdrop-filter: blur(4px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.1rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    color: var(--muted); text-decoration: none;
+    text-transform: uppercase; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    padding: 9px 22px;
+    background: var(--accent); color: var(--navy);
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase;
+    border: none; cursor: pointer; transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(245,166,35,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,166,35,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+  }
+  .hero-glow {
+    position: absolute; top: -20%; right: -10%;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(26,58,92,0.6) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-glow2 {
+    position: absolute; bottom: -10%; left: -5%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,201,167,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Syne', sans-serif; font-size: 0.72rem;
+    font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 28px;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-tag::before {
+    content: ''; width: 28px; height: 1px; background: var(--teal);
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 900; line-height: 1.05;
+    max-width: 900px;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero h1 em {
+    font-style: italic; color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 1.1rem; color: var(--muted);
+    max-width: 620px; line-height: 1.75;
+    margin-top: 28px;
+    font-weight: 300;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .hero-actions {
+    display: flex; gap: 16px; margin-top: 48px;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+  .btn-primary {
+    padding: 14px 32px;
+    background: var(--accent); color: var(--navy);
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.85rem; letter-spacing: 0.06em;
+    text-transform: uppercase; border: none; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold); transform: translateY(-2px); }
+  .btn-outline {
+    padding: 14px 32px;
+    background: transparent; color: var(--text);
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.85rem; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-top: 80px;
+    opacity: 0; animation: fadeUp 0.8s 1s forwards;
+  }
+  .stat-item {
+    padding: 32px 40px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.78rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-top: 6px;
+  }
+
+  /* SECTION BASE */
+  section { padding: 100px 48px; position: relative; }
+  .section-tag {
+    font-family: 'Syne', sans-serif; font-size: 0.72rem;
+    font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--teal);
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .section-tag::before { content: ''; width: 20px; height: 1px; background: var(--teal); }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700; line-height: 1.15;
+    max-width: 700px;
+  }
+  .section-title em { font-style: italic; color: var(--accent); }
+
+  /* PROBLEM SECTION */
+  .problem { background: var(--deep); }
+  .problem-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; margin-top: 64px;
+    align-items: start;
+  }
+  .problem-text p {
+    font-size: 1rem; color: var(--muted);
+    line-height: 1.8; margin-bottom: 20px;
+  }
+  .problem-text strong { color: var(--text); font-weight: 600; }
+  .constraints {
+    display: flex; flex-direction: column; gap: 16px;
+    margin-top: 32px;
+  }
+  .constraint-item {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 24px;
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    transition: border-color 0.2s;
+  }
+  .constraint-item:hover { border-left-color: var(--accent); }
+  .constraint-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(232,93,74,0.12);
+    font-size: 1rem;
+  }
+  .constraint-text h4 {
+    font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .constraint-text p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; margin-top: 64px;
+    border: 1px solid var(--border);
+  }
+  .feature-card {
+    padding: 40px 32px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    transition: background 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .feature-card:hover { background: rgba(255,255,255,0.06); }
+  .feature-card:hover::after { transform: scaleX(1); }
+  .feature-card:last-child { border-right: none; }
+  .feature-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; font-weight: 900;
+    color: rgba(245,166,35,0.12); line-height: 1;
+    margin-bottom: 20px;
+  }
+  .feature-icon {
+    font-size: 1.8rem; margin-bottom: 16px;
+  }
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif; font-size: 1rem;
+    font-weight: 700; margin-bottom: 12px; color: var(--text);
+  }
+  .feature-card p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; }
+
+  /* ROLES SECTION */
+  .roles { background: var(--deep); }
+  .roles-layout {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 60px; margin-top: 64px;
+  }
+  .role-tabs {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .role-tab {
+    padding: 16px 24px;
+    background: var(--card); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+    text-align: left;
+    border-left: 3px solid transparent;
+  }
+  .role-tab.active, .role-tab:hover {
+    background: rgba(245,166,35,0.08);
+    border-left-color: var(--accent);
+  }
+  .role-tab h4 {
+    font-family: 'Syne', sans-serif; font-size: 0.88rem;
+    font-weight: 700; color: var(--text); margin-bottom: 4px;
+  }
+  .role-tab p { font-size: 0.76rem; color: var(--muted); }
+  .role-panel {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 40px;
+  }
+  .role-panel-header {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 32px;
+    padding-bottom: 24px; border-bottom: 1px solid var(--border);
+  }
+  .role-avatar {
+    width: 52px; height: 52px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+  .role-panel-header h3 {
+    font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800;
+  }
+  .role-panel-header p { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+  .dashboard-mock {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .dash-widget {
+    padding: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+  }
+  .dash-widget.wide { grid-column: 1 / -1; }
+  .dash-widget h5 {
+    font-family: 'Syne', sans-serif; font-size: 0.72rem;
+    font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .metric-row { display: flex; align-items: baseline; gap: 8px; }
+  .metric-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700; color: var(--teal);
+  }
+  .metric-change { font-size: 0.78rem; color: var(--red); }
+  .metric-change.up { color: var(--teal); }
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 0.75rem; }
+  .bar-row span:first-child { width: 60px; color: var(--muted); flex-shrink: 0; }
+  .bar-track {
+    flex: 1; height: 8px;
+    background: rgba(255,255,255,0.06);
+    position: relative; overflow: hidden;
+  }
+  .bar-fill { height: 100%; background: var(--accent); }
+  .bar-fill.alert { background: var(--red); }
+  .bar-fill.ok { background: var(--teal); }
+  .alert-list { display: flex; flex-direction: column; gap: 8px; }
+  .alert-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: rgba(232,93,74,0.08);
+    border-left: 2px solid var(--red);
+    font-size: 0.78rem;
+  }
+  .alert-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+  .alert-dot.ok { background: var(--teal); }
+
+  /* OUTCOMES */
+  .outcomes-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 24px; margin-top: 64px;
+  }
+  .outcome-card {
+    padding: 36px;
+    background: var(--card); border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .outcome-card:hover { transform: translateY(-4px); }
+  .outcome-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .outcome-card:nth-child(1)::before { background: var(--accent); }
+  .outcome-card:nth-child(2)::before { background: var(--teal); }
+  .outcome-card:nth-child(3)::before { background: var(--red); }
+  .outcome-card:nth-child(4)::before { background: #A78BFA; }
+  .outcome-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 700;
+    color: var(--muted); margin-bottom: 16px;
+  }
+  .outcome-card h3 {
+    font-family: 'Syne', sans-serif; font-size: 1.1rem;
+    font-weight: 800; margin-bottom: 16px;
+  }
+  .outcome-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .outcome-list li {
+    font-size: 0.84rem; color: var(--muted);
+    padding-left: 16px; position: relative; line-height: 1.6;
+  }
+  .outcome-list li::before {
+    content: '→'; position: absolute; left: 0; color: var(--accent);
+    font-size: 0.8rem;
+  }
+
+  /* CTA */
+  .cta {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+    text-align: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .cta h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 900; margin-bottom: 20px;
+  }
+  .cta h2 em { font-style: italic; color: var(--accent); }
+  .cta p { font-size: 1rem; color: var(--muted); max-width: 500px; margin: 0 auto 40px; }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border);
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1rem; letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  footer p { font-size: 0.78rem; color: var(--muted); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* HAMBURGER MENU */
+  .hamburger {
+    display: none;
+    flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer;
+    padding: 8px; z-index: 200;
+  }
+  .hamburger span {
+    display: block; width: 24px; height: 2px;
+    background: var(--text); transition: all 0.3s;
+  }
+  .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+  /* MOBILE OVERLAY NAV */
+  .mobile-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 150;
+    background: rgba(11,21,37,0.97);
+    backdrop-filter: blur(12px);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 32px;
+  }
+  .mobile-overlay.open { display: flex; }
+  .mobile-overlay a {
+    font-family: 'Syne', sans-serif; font-size: 1.4rem;
+    font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text);
+    text-decoration: none; padding: 12px 24px;
+    transition: color 0.2s;
+  }
+  .mobile-overlay a:hover { color: var(--accent); }
+
+  /* TABLET — max 900px */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .nav-cta { display: none; }
+    .hamburger { display: flex; }
+    section { padding: 60px 24px; }
+    .hero { padding: 100px 24px 60px; }
+    .hero h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .problem-grid, .roles-layout { grid-template-columns: 1fr; gap: 40px; }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .outcomes-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+
+  /* PHONE — max 600px */
+  @media (max-width: 600px) {
+    nav { padding: 14px 16px; }
+    section { padding: 48px 16px; }
+    .hero { padding: 90px 16px 48px; min-height: auto; }
+    .hero h1 { font-size: 2rem; line-height: 1.15; }
+    .hero-sub { font-size: 0.95rem; margin-top: 18px; }
+    .hero-actions { flex-direction: column; gap: 12px; }
+    .btn-primary, .btn-outline {
+      width: 100%; text-align: center;
+      padding: 16px 24px; font-size: 0.9rem;
+    }
+    .stats-bar {
+      grid-template-columns: 1fr 1fr;
+      margin-top: 48px;
+    }
+    .stat-item { padding: 20px 16px; }
+    .stat-num { font-size: 2rem; }
+    .stat-label { font-size: 0.7rem; }
+    .section-title { font-size: 1.6rem; }
+    .problem-text p { font-size: 0.92rem; }
+    .constraint-item { padding: 16px; }
+    .features-grid {
+      grid-template-columns: 1fr;
+      border: none; gap: 12px;
+    }
+    .feature-card {
+      border: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 28px 20px;
+    }
+    .feature-card:last-child { border-right: 1px solid var(--border); }
+    .feature-num { font-size: 2.2rem; margin-bottom: 12px; }
+    .roles-layout { gap: 24px; }
+    .role-tabs { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+    .role-tab {
+      min-width: 140px; flex-shrink: 0;
+      padding: 12px 16px;
+    }
+    .role-tab h4 { font-size: 0.8rem; }
+    .role-tab p { font-size: 0.68rem; }
+    .role-panel { padding: 24px 16px; }
+    .role-panel-header { flex-direction: column; text-align: center; gap: 10px; }
+    .dashboard-mock { grid-template-columns: 1fr; }
+    .dash-widget.wide { grid-column: auto; }
+    .outcomes-grid { gap: 16px; }
+    .outcome-card { padding: 24px 20px; }
+    .outcome-card h3 { font-size: 1rem; }
+    .cta h2 { font-size: 1.6rem; }
+    .cta p { font-size: 0.9rem; }
+    .cta-buttons { flex-direction: column; gap: 12px; }
+    .cta-buttons .btn-primary, .cta-buttons .btn-outline {
+      width: 100%; text-align: center;
+    }
+    footer { padding: 32px 16px; }
+  }
+
+  /* VERY SMALL PHONES — max 380px */
+  @media (max-width: 380px) {
+    .hero h1 { font-size: 1.65rem; }
+    .stats-bar { grid-template-columns: 1fr; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .stat-item:last-child { border-bottom: none; }
+    .role-tabs { flex-direction: column; }
+    .role-tab { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ICDS<span> Digital</span></div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#roles">Roles</a></li>
+    <li><a href="#outcomes">Outcomes</a></li>
+  </ul>
+  <button class="nav-cta">Request Demo</button>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE OVERLAY -->
+<div class="mobile-overlay" id="mobileNav">
+  <a href="#problem" onclick="closeMenu()">Problem</a>
+  <a href="#features" onclick="closeMenu()">Features</a>
+  <a href="#roles" onclick="closeMenu()">Roles</a>
+  <a href="#outcomes" onclick="closeMenu()">Outcomes</a>
+  <a href="#contact" onclick="closeMenu()" style="color:var(--accent)">Request Demo</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-tag">ICDS Systems · Digital Enablement Platform</div>
+  <h1>From Raw Data to<br><em>Actionable Intelligence</em></h1>
+  <p class="hero-sub">A role-based digital enablement platform that empowers AWWs, Supervisors, CDPOs and senior officials with real-time decision support — from AWC level to State level.</p>
+  <div class="hero-actions">
+    <button class="btn-primary">Explore Platform</button>
+    <button class="btn-outline">View Dashboard Demo</button>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Administrative Levels</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">Real‑time</div>
+      <div class="stat-label">Data Visibility</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">360°</div>
+      <div class="stat-label">Child Risk Monitoring</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">Zero</div>
+      <div class="stat-label">Extra Data Entry Burden</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem">
+  <div class="section-tag">The Challenge</div>
+  <h2 class="section-title">Data that is <em>descriptive,</em><br>not actionable</h2>
+  <div class="problem-grid">
+    <div class="problem-text">
+      <p>While ICDS generates extensive data across nutrition, health and service delivery, decision-making at various administrative levels is constrained by systemic gaps. The data exists — but remains locked in formats that do not drive action.</p>
+      <p>Frontline supervisors and administrators require <strong>decision-support tools</strong>, not just reports, to enable timely interventions, targeted monitoring and efficient resource deployment.</p>
+    </div>
+    <div class="constraints">
+      <div class="constraint-item">
+        <div class="constraint-icon">⚡</div>
+        <div class="constraint-text">
+          <h4>Fragmented Data Sources</h4>
+          <p>Nutrition, health, and service delivery data siloed across disconnected systems with no unified view.</p>
+        </div>
+      </div>
+      <div class="constraint-item">
+        <div class="constraint-icon">👁</div>
+        <div class="constraint-text">
+          <h4>Lack of Real-Time Visibility</h4>
+          <p>Delayed reporting cycles prevent timely response to emerging risks at AWC and Block levels.</p>
+        </div>
+      </div>
+      <div class="constraint-item">
+        <div class="constraint-icon">🎯</div>
+        <div class="constraint-text">
+          <h4>Absence of Prioritization Logic</h4>
+          <p>No automated mechanisms to surface high-risk cases or underperforming centres for targeted action.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-tag">Core Capabilities</div>
+  <h2 class="section-title">Four pillars of<br><em>intelligent</em> decision support</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-num">01</div>
+      <div class="feature-icon">📊</div>
+      <h3>Role-Specific Decision Support</h3>
+      <p>Dashboards tailored to AWWs, Supervisors, CDPOs, DW&CW&EOs and senior officials. Each role sees only what they need to act on.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-num">02</div>
+      <div class="feature-icon">🔔</div>
+      <h3>Alert & Prioritisation Engine</h3>
+      <p>Automated alerts for high-risk children, underperforming centres, and emerging trends. Suggested action pathways for each user role.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-num">03</div>
+      <div class="feature-icon">📈</div>
+      <h3>Performance Monitoring</h3>
+      <p>Track intervention delivery and workforce performance. Identify systemic bottlenecks before they become crises.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-num">04</div>
+      <div class="feature-icon">✅</div>
+      <h3>High Adoption & Ease of Use</h3>
+      <p>Minimal additional data entry requirements. Designed for high usability and sustained adoption by ICDS field staff.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section class="roles" id="roles">
+  <div class="section-tag">Role-Based Access</div>
+  <h2 class="section-title">Every stakeholder gets<br>their <em>own intelligence</em></h2>
+  <div class="roles-layout">
+    <div class="role-tabs">
+      <div class="role-tab active" onclick="showRole('aww', this)">
+        <h4>AWW (Anganwadi Worker)</h4>
+        <p>AWC Level · Daily operations</p>
+      </div>
+      <div class="role-tab" onclick="showRole('supervisor', this)">
+        <h4>Supervisor</h4>
+        <p>Sector Level · Field oversight</p>
+      </div>
+      <div class="role-tab" onclick="showRole('cdpo', this)">
+        <h4>CDPO</h4>
+        <p>Block Level · Programme management</p>
+      </div>
+      <div class="role-tab" onclick="showRole('state', this)">
+        <h4>DW&CW&EO / State</h4>
+        <p>District & State · Strategic oversight</p>
+      </div>
+    </div>
+    <div class="role-panel" id="role-panel">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section id="outcomes">
+  <div class="section-tag">Expected Outcomes</div>
+  <h2 class="section-title">What the platform<br><em>delivers</em></h2>
+  <div class="outcomes-grid">
+    <div class="outcome-card">
+      <div class="outcome-num">01</div>
+      <h3>Role-Specific Decision Support</h3>
+      <ul class="outcome-list">
+        <li>Dashboards tailored to each administrative role</li>
+        <li>Clear visibility into child-level risks and intervention status</li>
+        <li>Contextual data surfaced at the right level of granularity</li>
+      </ul>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">02</div>
+      <h3>Alert & Prioritisation Mechanisms</h3>
+      <ul class="outcome-list">
+        <li>Automated alerts for high-risk children and underperforming centres</li>
+        <li>Early warning for emerging trends across blocks and districts</li>
+        <li>Suggested action pathways for each user role</li>
+      </ul>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">03</div>
+      <h3>Performance & Outcome Monitoring</h3>
+      <ul class="outcome-list">
+        <li>Tracking of intervention delivery and workforce performance</li>
+        <li>Identification of systemic bottlenecks across the programme</li>
+        <li>Longitudinal outcomes data for evidence-based planning</li>
+      </ul>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">04</div>
+      <h3>High Adoption & Ease of Use</h3>
+      <ul class="outcome-list">
+        <li>Minimal additional data entry requirements for field staff</li>
+        <li>High usability and sustained adoption by ICDS workforce</li>
+        <li>Works on low-bandwidth and low-end devices in field conditions</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="contact">
+  <h2>Ready to make ICDS data<br><em>work for children?</em></h2>
+  <p>Partner with us to implement a decision-support platform that transforms how ICDS delivers impact.</p>
+  <div class="cta-buttons">
+    <button class="btn-primary">Get in Touch</button>
+    <button class="btn-outline">Download Proposal</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ICDS Digital Enablement Platform</div>
+  <p>Digital Enablement · Decision Support · Performance Monitoring</p>
+  <p style="color: var(--muted); font-size: 0.75rem;">Section C: ICDS Systems Proposal</p>
+</footer>
+
+<script>
+const roles = {
+  aww: {
+    icon: '👩‍⚕️', title: 'Anganwadi Worker', subtitle: 'AWC-level daily operations dashboard',
+    widgets: [
+      { type: 'metric', title: 'Children Tracked Today', val: '34', change: '+2', up: true },
+      { type: 'metric', title: 'SAM/MAM Alerts', val: '3', change: 'Action needed', up: false },
+      { type: 'bars', title: 'Nutrition Status — This Week', bars: [
+        { label: 'Normal', pct: 72, cls: 'ok' },
+        { label: 'MAM', pct: 18, cls: '' },
+        { label: 'SAM', pct: 10, cls: 'alert' },
+      ]},
+      { type: 'alerts', title: 'Priority Actions', alerts: [
+        { text: 'Priya (3y) — missed 2 consecutive weigh-ins', ok: false },
+        { text: 'Ravi (2y) — SAM, refer to NRC', ok: false },
+        { text: 'Supplementary nutrition delivered ✓', ok: true },
+      ]},
+    ]
+  },
+  supervisor: {
+    icon: '👤', title: 'Sector Supervisor', subtitle: 'Sector-level monitoring across 10–25 AWCs',
+    widgets: [
+      { type: 'metric', title: 'AWCs Under Supervision', val: '18', change: 'All reporting', up: true },
+      { type: 'metric', title: 'Underperforming Centres', val: '4', change: 'Needs visit', up: false },
+      { type: 'bars', title: 'Service Delivery Compliance', bars: [
+        { label: 'Weighing', pct: 88, cls: 'ok' },
+        { label: 'Nutrition', pct: 76, cls: '' },
+        { label: 'Home Visit', pct: 61, cls: 'alert' },
+      ]},
+      { type: 'alerts', title: 'Centre-Level Flags', alerts: [
+        { text: 'AWC Rampur — 5 SAM cases, no referral logged', ok: false },
+        { text: 'AWC Nagar — 3 weeks no weighing data', ok: false },
+        { text: 'AWC Patel Nagar — performance improved ✓', ok: true },
+      ]},
+    ]
+  },
+  cdpo: {
+    icon: '🏛️', title: 'CDPO', subtitle: 'Block-level programme management & planning',
+    widgets: [
+      { type: 'metric', title: 'AWCs in Block', val: '182', change: '94% active', up: true },
+      { type: 'metric', title: 'High-Risk Children', val: '47', change: '+6 this month', up: false },
+      { type: 'bars', title: 'Sector Performance Index', bars: [
+        { label: 'Sector A', pct: 91, cls: 'ok' },
+        { label: 'Sector B', pct: 78, cls: '' },
+        { label: 'Sector C', pct: 54, cls: 'alert' },
+        { label: 'Sector D', pct: 82, cls: '' },
+      ]},
+      { type: 'alerts', title: 'Block-Level Priorities', alerts: [
+        { text: 'Sector C bottleneck — low home visit compliance', ok: false },
+        { text: '12 NRC referrals pending follow-up', ok: false },
+        { text: 'Monthly targets on track in Sector A ✓', ok: true },
+      ]},
+    ]
+  },
+  state: {
+    icon: '🗺️', title: 'DW&CW&EO / State Official', subtitle: 'District & state strategic overview',
+    widgets: [
+      { type: 'metric', title: 'Districts Monitored', val: '13', change: 'Real-time', up: true },
+      { type: 'metric', title: 'Programme Coverage', val: '87%', change: '+3% MoM', up: true },
+      { type: 'bars', title: 'District SAM Prevalence (%)', bars: [
+        { label: 'Dist. 1', pct: 8, cls: 'ok' },
+        { label: 'Dist. 2', pct: 14, cls: '' },
+        { label: 'Dist. 3', pct: 22, cls: 'alert' },
+        { label: 'Dist. 4', pct: 11, cls: '' },
+      ]},
+      { type: 'alerts', title: 'State-Level Intelligence', alerts: [
+        { text: 'District 3 — SAM spike, deploy additional resources', ok: false },
+        { text: 'Q3 intervention outcomes below state target', ok: false },
+        { text: 'Districts 1 & 5 exceeding performance benchmarks ✓', ok: true },
+      ]},
+    ]
+  }
+};
+
+function renderWidget(w) {
+  if (w.type === 'metric') {
+    return `<div class="dash-widget">
+      <h5>${w.title}</h5>
+      <div class="metric-row">
+        <div class="metric-val">${w.val}</div>
+        <div class="metric-change ${w.up ? 'up' : ''}">${w.change}</div>
+      </div>
+    </div>`;
+  }
+  if (w.type === 'bars') {
+    const bars = w.bars.map(b => `<div class="bar-row">
+      <span>${b.label}</span>
+      <div class="bar-track"><div class="bar-fill ${b.cls}" style="width:${b.pct}%"></div></div>
+      <span style="color:var(--muted);font-size:0.72rem">${b.pct}%</span>
+    </div>`).join('');
+    return `<div class="dash-widget wide"><h5>${w.title}</h5><div class="bar-chart">${bars}</div></div>`;
+  }
+  if (w.type === 'alerts') {
+    const items = w.alerts.map(a => `<div class="alert-item" style="${a.ok ? 'background:rgba(0,201,167,0.06);border-left-color:var(--teal)' : ''}">
+      <div class="alert-dot ${a.ok ? 'ok' : ''}"></div>
+      <span>${a.text}</span>
+    </div>`).join('');
+    return `<div class="dash-widget wide"><h5>${w.title}</h5><div class="alert-list">${items}</div></div>`;
+  }
+}
+
+function showRole(key, el) {
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const r = roles[key];
+  const panel = document.getElementById('role-panel');
+  panel.innerHTML = `
+    <div class="role-panel-header">
+      <div class="role-avatar">${r.icon}</div>
+      <div><h3>${r.title}</h3><p>${r.subtitle}</p></div>
+    </div>
+    <div class="dashboard-mock">
+      ${r.widgets.map(renderWidget).join('')}
+    </div>`;
+}
+
+showRole('aww', document.querySelector('.role-tab'));
+
+// MOBILE MENU
+function toggleMenu() {
+  const nav = document.getElementById('mobileNav');
+  const btn = document.querySelector('.hamburger');
+  nav.classList.toggle('open');
+  btn.classList.toggle('active');
+  document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+}
+function closeMenu() {
+  document.getElementById('mobileNav').classList.remove('open');
+  document.querySelector('.hamburger').classList.remove('active');
+  document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>
