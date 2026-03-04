@@ -809,7 +809,9 @@ async function api(path, opts = {}) {
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...opts.headers }
   });
   if (res.status === 401) { logout(); throw new Error('Session expired'); }
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
 }
 
 // ─── TABS ───────────────────────────────────────────────────
@@ -1080,8 +1082,10 @@ function showAddChild() {
 
 async function submitChild(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Registering...';
   try {
-    await api('/api/children', {
+    const result = await api('/api/children', {
       method: 'POST',
       body: JSON.stringify({
         name: document.getElementById('cName').value,
@@ -1096,7 +1100,10 @@ async function submitChild(e) {
     document.getElementById('addSuccess').classList.add('show');
     showToast('✅ Child registered!');
     setTimeout(() => loadChildren(), 1500);
-  } catch(e) { showToast('❌ Registration failed'); }
+  } catch(err) {
+    btn.disabled = false; btn.textContent = 'Register Child';
+    showToast('❌ ' + (err.message || 'Registration failed'));
+  }
 }
 
 // ─── ALERTS ─────────────────────────────────────────────────
