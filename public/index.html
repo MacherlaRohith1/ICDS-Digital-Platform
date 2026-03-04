@@ -1056,7 +1056,10 @@ async function recordVisit(childId, type) {
 }
 
 function showAddChild() {
-  switchTab('children');
+  currentTab = 'children';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-children').classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'children'));
   const screen = document.getElementById('screen-children');
   screen.innerHTML = `
     <div class="greeting"><h2>Register Child</h2><p>Add a new child to your AWC</p></div>
